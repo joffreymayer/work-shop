@@ -1,0 +1,237 @@
+---
+title: "White Paper"
+author: "Joffrey Mayer"
+date: "3/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Future of Money
+
+Das White Paper der SIX mit dem Titel "Future of Money" befasst sich mit **diversen Szenarien**, in denen sich der Zahlungsverkehr in Zukunft bewegen wird:
+
+![Key Findings: Die 7 Szenarien, welche sich die SIX ausgedacht hat](bilder/szenarien.png)
+
+- <u>Wichtige Bemerkung</u>: Es geht dabei um Szenarien, welche **in 5-7 Jahren** eintreffen werden. Da das White Paper **im November 2019 veröffentlicht** wurde, beziehen sich die Szenarien also um das **Jahr 2025** herum.
+
+### Einblick in das Leben von Felix Muster in 2025
+
+1) Da die Digitalisierung das Zahlverhalten der Menschen ändert, wird in Zukunft immer mehr auf **bequemere Online-Zahlungen** gesetzt werden. Die Konsequnez:
+
+    - Reduction in the <u>number</u> of ATMs (= Geldautomat).
+  
+2) Durch **smarte Apps & die Gewohnheit, alles mit dem Smartphone steuern zu können**, wird es zukünftig möglich sein, bereits <u>vor</u> dem Ausstieg aus dem Zug, seinen Kaffee zu bezahlen: 
+  
+    - Konsequenz: Die Smartphone-Suche / -Gewohnheit, führt zu einer ständigen Konnektivität  (= pervasive connectivity).
+  
+3) Der immer stärkere Drang der Unternehmen, **wiederholende Tasks** zu automatisieren, um konsequente Einsparungen zu ermöglichen & die Effizienz zu steigern, fördert die **Schaffung von (ubiquitären) UIs (= User Interface)**, die überall und jederzeit abrufbar sind.
+
+    Dadurch werden auch neue Geschäftspraktiken gefördert, wie zum Beispiel ein Rabatt, wenn das Unternehmen die Daten des Kunden für Datenanalysen verwenden darf oder wenn der Kunde einen Tweet bezüglich eines Unternehmens verfasst (= **nicht-monetäre Vermögenswerte als Zahlungsmittel**).
+
+4) Aufgrund der Gewohnheit der Leute, wird Bargeld jedoch stets Teil des Wirtschaftssystems sein, jedoch in deutlich reduzierter Form. Es könnte möglich sein, dass - via Crowdsourcing - eine neue Bargeldinfrastruktur entsteht (= **corwdsourced cash infrastructure**), welche ein Substitut für die ATMs sein werden.
+
+5) Um die wenigen ATMs (= Bankomaten) - augrund der deutlich tieferen Menge an umlaufendem Bargeld - zu managen, werden die Banken eventuell auf lokale Geschäfte zählen, welche die ATMs am Abend mit zusätzlichem Cash auffüllen (= **circular local cash economies**).
+
+6) Um eine Übersicht über alle bageldlosen Transaktionen zu erhalten, kann auf eine "**onestop-shop (digitale) Plattform**" zugegriffen werden, welche die einzelnen Transaktionen - bezogen von <u>diversen</u> Finanzdienstleistern - auf einen Blick zusammenfasst (= dies wird - ähnlich wie Hifi-Shark - mittels APIs funktionieren).
+
+7) Da Bargeld nicht seine Funktion als **sicheres Asset mit Eigenwert** (= cash persists as a store of value), werden weiterhin Tresore auf der Welt benötigt werden, um das Geld physisch lagern zu können.
+
+8) Um die Transaktionen mit dem Ausland weiterhin zu gewöhrleisten, obwohl die Geschäfte dort vielleicht <u>nicht</u> die Möglichkeit, die in der Schweiz angebotenen Standard-Lösungen für bargeldloses Zahlen anbieten, wird es auch dort Lösungen für den internationalen Zahlungsverkehr geben (= **interoperable payment schemes**).
+
+## Data Analysis
+
+_Since the instructions on the PDF were written in English, the following analysis will be done in this language as well_.
+
+- <u>Overall Goal</u>: The manager would like to have a **better understanding of the ATM landscape in Zurich**. As a data scientist, you need to **present the results** to the manager. Therefore it is important to have a story line and compile (= vermitteln) the results so that you can successfully convey your message within the given time frame.
+- <u>Tool to achieve this goal</u>: I will use RMarkdown, because this will allow me to achieve a good visualization of the results - as a way to _efficiently_ present the result, since graphs are a powerful tool to **interact with the audience** - as well as displaying the methods I used, since markdown documents allow me to show you the code (= **_reproducibility_ aspect of research**). 
+
+First of all, the manager needs to know how the ATM's are distributed across banks. In the dataset, each row represents an observation in the form of a single ATM. In order to do this, I needed to do a little bit of data processing. For the sake of transparancy, I will display the code here. 
+
+On a more technical level, goal was to create a column with fewer groups of banks in order to sum over each group of banks:
+
+```{r rename-columns-build-dummies, eval = FALSE}
+# re-name columns:
+names(dd1)[2] <- "id"
+names(dd1)[3] <- "local_descr"
+names(dd1)[4] <- "street_number"
+names(dd1)[5] <- "postal_code"
+names(dd1)[6] <- "city"
+names(dd1)[7] <- "numb_withdrawal"
+names(dd1)[8] <- "total_withdrawal_CHF"
+names(dd1)[9] <- "transaction_inquiry"
+names(dd1)[10] <- "balance_inquiry"
+names(dd1)[11] <- "numb_own_bank_withdrawal"
+names(dd1)[12] <- "total_own_bank_withdrawal"
+names(dd1)[13] <- "numb_foreign_bank_withdrawal"
+names(dd1)[14] <- "total_foreign_bank_withdrawal"
+str(dd1)
+
+dd1$local_descr <- tolower(dd1$local_descr)
+
+# creating dummies:
+dd1$ubs <- ifelse(grepl("ubs",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$cs <- ifelse(grepl("cs",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$sbb <- ifelse(grepl("sbb",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$bav <- ifelse(grepl("bav",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$zkb <- ifelse(grepl("zkb",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+
+# mistake here for 'vab'?:
+dd1$vab <- ifelse(grepl("vab",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+
+dd1$rb <- ifelse(grepl("rb",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$mb <- ifelse(grepl("mb",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$cc <- ifelse(grepl("cc",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$jul <- ifelse(grepl("jul",dd1$local_descr),1,0) # for pattern matching, use the function 'grepl'
+dd1$rest <- ifelse(dd1$ubs ==0 & dd1$cs == 0 & dd1$sbb == 0 & dd1$bav == 0 & dd1$zkb == 0 & dd1$vab == 0 & dd1$rb == 0 & dd1$mb == 0 & dd1$cc == 0 & dd1$jul == 0,1,0)
+View(dd1) # Sort after each category to see which ones could be grouped together:
+# I would group: sbb, bav, vab, cc, jul & rest together within 1 group.
+dd1$rest_group <- ifelse(dd1$sbb == 1 | dd1$bav == 1 | dd1$vab == 1 | dd1$cc == 1 | dd1$jul == 1 | dd1$rest == 1,1,0)
+View(dd1) # sort after each category to see if it worked: almost, but it seems I have 
+# done two mistakes with the classification of the SBB-ATMs: the ATMs with the IDs
+# 1768 and 2424 are wrongly coded!
+
+# Imputation of wrongly coded numbers: now impute the correct number for the 
+# rest_group'-column:
+target <- which(colnames(dd1)=="rest_group") # column 26 = target-column
+dd1[dd1$id==1768, c(target)] <- 0 # impute new value
+dd1[dd1$id==2424, c(target)] <- 0 # impute new value
+View(dd1) # check if it worked: sort after 'sbb'-column
+
+# creating the group-variable with unique IDs for each bank:
+dd1$banks <- NA # let's create an empty variable in which I will put all the 
+# bank-groups I created above
+summary(dd1$banks) # check: should have 278 missings
+
+dd1$banks <- ifelse(dd1$ubs == 1, 1, dd1$banks) # ubs_ID == 1
+summary(dd1$banks) # check: should have 211 missings --> 67 UBS ATMs (= 278 - 211)
+
+dd1$banks <- ifelse(dd1$cs == 1, 2, dd1$banks) # cs_ID == 2
+summary(dd1$banks) # check: should have 144 missings --> 67 CS ATMs (= 211 - 144)
+
+dd1$banks <- ifelse(dd1$zkb == 1, 3, dd1$banks) # zkb_ID == 3
+summary(dd1$banks) # check: should have 49 missings --> 95 ZKB ATMs (= 144 - 49)
+
+dd1$banks <- ifelse(dd1$rb == 1, 4, dd1$banks) # rb_ID == 4
+summary(dd1$banks) # check: should have 32 missings --> 17 RB ATMs (= 49 - 32)
+
+dd1$banks <- ifelse(dd1$mb == 1, 5, dd1$banks) # mb_ID == 5
+summary(dd1$banks) # check: should have 13 missings --> 19 MB ATMs (= 32 - 13)
+
+dd1$banks <- ifelse(dd1$rest_group == 1, 6, dd1$banks) # mb_ID == 5
+summary(dd1$banks) # check: should have 0 missings --> 13 rest_group ATMs (= sbb,
+# bav, vab, cc, jul, zuerich)
+```
+
+After this was done, I thought that answering questions, such as:
+
+- Which banks have the highest number (= frequency) of withdrawals by banks?
+- Which is the total withdrawal-volume by banks?
+- How many inquiries are there per day?
+
+Would be very beneficial information for my new manager, since one of the SIX's function is to have an exact overview of the transactions that take place within the city, in order to help them to be more efficient (= better management?) in their SIC-task.
+
+That's why I started to add new variables to the dataset and bring the dataset into the right form to perform a "sum by group":
+
+```{r create-variables, eval = FALSE}
+# creating other variables:
+dd1$chf_per_withdraw <- dd1$total_withdrawal_CHF / dd1$numb_withdrawal # useful to know, for the cash-management
+View(dd1$chf_per_withdraw) # we see that there are some mistakes, since some data has 
+# 'infinite' as values. 
+dd1$numb_withdrawal_new <- dd1$numb_own_bank_withdrawal + dd1$numb_foreign_bank_withdrawal
+dd1$chf_per_withdraw <- dd1$total_withdrawal_CHF / dd1$numb_withdrawal_new # useful to know, for the cash-management
+View(dd1$chf_per_withdraw) # check: now there are all - but one? - correct!
+
+dd1$total_inquiry <- dd1$transaction_inquiry + dd1$balance_inquiry
+View(dd1)
+
+# Sum over the banks to see the number of transaction-volume
+dd2 <- dd1[27:30] # take only a subset
+str(dd2)
+dd2$banks <- as.factor(dd2$banks)
+str(dd2)
+View(dd2)
+```
+
+After preparing the data, I was ready to visualize my results. Let's start with the total number of ATMs in Zurich owned by a bank.
+
+- This is the code to generate the graph:
+
+``` {r graph-code, eval = FALSE}
+# Each bank's total number of AMTs in Zurich (= frequency):
+dd2$banks_freq <- 1 # create a vector of ones which will be counted by groups
+dd3 <- aggregate(dd2$banks_freq, by=list(Category=dd2$banks), FUN=sum, na.rm=TRUE)
+ggplot(dd3, aes(x = Category, y = x)) +
+  geom_col() +
+  labs(y="Total number of ATMs in Zurich owned by a Bank", x = "Bank-Categories")
+
+```
+
+- This is the visualization of the results: 
+
+![Total Number of ATMs in Zurich owned by a Bank](bilder/total-number-of-atms-owned-by-banks.png)
+
+We can also display this information a bit differently, by looking at the ATM's proportions: 
+
+![Proportions of ATMs across different Banks](bilder/proportion-of-banks-zuerich.svg)
+
+### The Package "RSwissMaps" for even better visualizations
+
+RSwissMaps allows to link thematic data to Swiss administrative divisions (municipalities, districts, cantons) and to plot it on a map like this one:
+
+![This is the Map of Switzerland with pseudo-data](bilder/example-switzerland-map.png)
+
+My idea here was, that a mapping of the ATM's location on a map with the city of zurich, would show the manager where there are higher concentration of cash-withdrawals within the city. This information is crucial for the manager, considering that the role of the SIX is to secure an efficient traffic of payments.
+
+Ideally, this would have been the desired result:
+
+![This graph shows the concentration of restaurants in the southern of France](bilder/concentration-example.png)
+
+Unfortunately, due to time constraints, this is the furthest I got with the package, since it is my first time dealing with spacial data / mapping:
+
+![The City of Zurich as a map](bilder/map-zurich-limit.png)
+
+### Back to the main analysis
+
+Other interesting graphs are - of course - related to the volume of withdrawal each bank has:
+
+![The City of Zurich as a map](bilder/volume-frequency-per-bank.png)
+
+Again, I could go even deeper into the analysis, by looking at withdrawals from the own bank VS. foreign banks.
+
+We can also look at inquiries, for example:
+
+![The City of Zurich as a map](bilder/total-inquiry-per-bank.png)
+
+### And so on...
+
+This is the furthest I could get since yesterday evening. 
+
+For the sake of transparancy, these are the packages I used to get to my results:
+
+``` {r packages, eval = FALSE}
+# install.packages("RSwissMaps")
+library("RSwissMaps")
+# install.packages("readxl")
+library(readxl) # to import the excel file
+# install.packages("fastDummies")
+library("fastDummies")
+# install.packages("stringr")
+# install.packages("quanteda")
+library("dplyr")
+library("ggplot2")
+```
+
+I hope you liked my approach and I am looking forward to further discussions in the work-shop! =)
+
+### The Questions
+
+> What data do you have and what are some main characteristics?
+
+The main characteristics of the dataset is that it contains primarily information about each of the ATM's location, as well as some transaction data and meta data about which bank owns the ATMs.
+
+> Assuming, you would like to add more analysis to this presentation, but you had to realize that the available data is not sufficient. What additional data could be useful?
+
+For example it would be useful to see whether the demand for cash decreased compared to last year, or - for example - 10 years in the past. This would allow to identify trends in the demand for cash and how banks should manage their ATMs in the future.
